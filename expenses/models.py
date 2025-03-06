@@ -1,31 +1,19 @@
 from django.db import models
-from django_tenants.models import TenantMixin, DomainMixin
+from tenants.models import Tenant
 from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 
-User = get_user_model()
+User = get_user_model() 
+    
 
 class Company(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE) # Every company belongs to a tenant (helps enforce data integrity)
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
     
-
-class Tenant(TenantMixin):
-    """
-    Represents a tenant in the multi-tenant system.
-    Each tenant gets its own schema.
-    """
-    name = models.CharField(max_length=100)
-    schema_name = models.CharField(max_length=50, unique=True) # Reqquired for Django-Tenants
-    created_on = models.DateField(auto_now_add=True)
-    auto_create_schema = True  # Creates schema on creation
-    auto_drop_schema = True  # Deletes schema if tenant is deleted
-
-    def __str__(self):
-        return self.name
 
 class Expenses(models.Model):
     CATEGORY_CHOICES = [
@@ -50,15 +38,9 @@ class Expenses(models.Model):
         """
         if not self.tenant_id:
             raise ValueError("Expenses must have a tenant assigned.")
-        with schema_context(self.tenant.schema_name):
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f'{self.user.username} - {self.amount} ({self.category})'
 
 
-class Domain(DomainMixin):
-    """
-    Represents a domain for each tenant.
-    """
-    pass

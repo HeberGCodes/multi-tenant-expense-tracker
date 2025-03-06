@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 
 SHARED_APPS = [
     'django_tenants',
+    'tenants',
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,8 +54,8 @@ The TENANT_APPS list contains the apps that are specific to each tenant.
 """
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS # The separation of SHARED_APPS and TENANT_APPS helps Django-Tenants correctly manage which apps belong in the public schema (shared across all tenants) and which ones belong inside each tenant’s schema.
 
-TENANT_MODEL = 'expenses.Tenant'
-TENANT_DOMAIN_MODEL = 'expenses.Domain'
+TENANT_MODEL = 'tenants.Tenant'
+TENANT_DOMAIN_MODEL = 'tenants.Domain'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
