@@ -1,1 +1,6 @@
-env/\n__pycache__/\ndb.sqlite3\n*.pyc\n.DS_Store
+env/
+
+__pycache__/
+*.py[cod]
+
+.env

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,27 +21,51 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m!yy@@t+v9mq=(uk-5+_w_uw6k02)7%*8w&vf&ceu)n6dqs=q-'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
-INSTALLED_APPS = [
+SHARED_APPS = [
+    'django_tenants',
+    'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
+
+TENANT_APPS = [
+    'expenses',
+]
+
+"""
+The SHARED_APPS list contains the apps that are shared among all tenants.
+The TENANT_APPS list contains the apps that are specific to each tenant.
+"""
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS # The separation of SHARED_APPS and TENANT_APPS helps Django-Tenants correctly manage which apps belong in the public schema (shared across all tenants) and which ones belong inside each tenant’s schema.
+
+TENANT_MODEL = 'expenses.Tenant'
+TENANT_DOMAIN_MODEL = 'expenses.Domain'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django_tenants.middleware.main.TenantMainMiddleware',  # Added this 26/02
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,10 +100,18 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': config('DB_NAME'),
+        'USER':  config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
+    }   
 }
+
+TENANT_DATABASE_ALIAS = 'default' # Ensures the default database is used for tenant-related operations
+
+DATABASE_ROUTERS = ('django_tenants.routers.TenantSyncRouter',)  # Ensures tenant separation
 
 
 # Password validation
@@ -105,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Madrid'
 
 USE_I18N = True
 
