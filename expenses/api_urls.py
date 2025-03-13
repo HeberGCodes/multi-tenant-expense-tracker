@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import ExpenseListCreateView
 
 urlpatterns = [
-    path('first/', views.first_api, name='first_api'),
+    path('expenses/', ExpenseListCreateView.as_view(), name='expenses-list-create'),
 ]

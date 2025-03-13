@@ -1,9 +1,10 @@
-from django.shortcuts import render
-from django.http import JsonResponse
+from rest_framework import generics
+from .models import Expenses
+from .serializers import ExpenseSerializer
 
-def first_api(request):
-    data = {
-        'message': 'Welcome to my first Expense Tracker API'
-    }
-    return JsonResponse(data)
+
+class ExpenseListCreateView(generics.ListCreateAPIView):
+    queryset = Expenses.objects.all()
+    serializer_class = ExpenseSerializer
+    
 
