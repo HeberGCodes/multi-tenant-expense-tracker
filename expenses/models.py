@@ -7,9 +7,10 @@ User = get_user_model()
     
 
 class Company(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE) # Every company belongs to a tenant (helps enforce data integrity)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE) # Every company belongs to a tenant (helps enforce data integrity)
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_default = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
