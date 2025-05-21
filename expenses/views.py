@@ -19,3 +19,11 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
         
         serializer.save(tenant=tenant, user=user, company=default_company)
         
+        
+class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ExpenseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Expenses.objects.filter(tenant=self.request.tenant) # Ensure that the user can only access their own expenses
+        
