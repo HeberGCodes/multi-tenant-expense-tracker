@@ -1,12 +1,20 @@
 from rest_framework import generics, permissions
 from .models import Expenses, Company
 from .serializers import ExpenseSerializer
-
+from django_filters.rest_framework import DjangoFilterBackend
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
-    queryset = Expenses.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        'category': ['exact'],
+        'date': ['exact', 'gte', 'lte'],
+        'amount': ['exact', 'gte', 'lte'],
+    }
+    
+    def get_queryset(self):
+        return Expenses.objects.filter(tenant=self.request.tenant)
 
     def perform_create(self, serializer):
         tenant = self.request.tenant
