@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from .models import Expenses, Company
-from .serializers import ExpenseSerializer
+from .serializers import ExpenseSerializer, CompanySerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -43,3 +43,22 @@ class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
             , user=self.request.user # Only this user's expenses
         )
         
+
+class CompanyListCreateView(generics.ListCreateAPIView):
+    serializer_class = CompanySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Company.objects.filter(tenant=self.request.tenant)  # Only this tenant's companies
+
+    def perform_create(self, serializer):
+        serializer.save(tenant=self.request.tenant)  # Save the tenant with the company
+        
+
+class CompanyDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CompanySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Company.objects.filter(tenant=self.request.tenant)  # Only this tenant's companies
+    
