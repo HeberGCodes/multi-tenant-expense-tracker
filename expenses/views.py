@@ -16,7 +16,10 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
     }
     
     def get_queryset(self):
-        return Expenses.objects.filter(tenant=self.request.tenant)
+        return Expenses.objects.filter(
+            tenant=self.request.tenant, # Only this tenant's expenses
+            user=self.request.user # Only this user's expenses
+        )
 
     def perform_create(self, serializer):
         tenant = self.request.tenant
@@ -35,5 +38,8 @@ class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Expenses.objects.filter(tenant=self.request.tenant) # Ensure that the user can only access their own expenses
+        return Expenses.objects.filter(
+            tenant=self.request.tenant # Only this tenant's expenses
+            , user=self.request.user # Only this user's expenses
+        )
         
